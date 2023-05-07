@@ -1,4 +1,4 @@
-import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
+import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react"
 import {
   HeaderContainer,
   HeaderInfo,
@@ -11,79 +11,71 @@ import {
   VaultContainer,
   VaultItems,
   VaultTitle,
-} from "@/styles/home";
-import { useEffect, useState } from "react";
-import { PublicKey, Transaction } from "@solana/web3.js";
+} from "@/styles/home"
+import { useEffect, useState } from "react"
+import { PublicKey, Transaction } from "@solana/web3.js"
 import {
-  getAllMintOwnedByUser,
+  getAllNftsOwnedByUser,
   getAllUserStakeInfo,
   getUserInfo,
-} from "@/utils/getPda";
+} from "@/utils/accounts"
 import {
   createRedeemIx,
   createStakeIx,
   createUnstakeIx,
-  getNftStakingProgram,
-  signAndSendTx,
-} from "@/utils/createIx";
-import { IdlAccounts, Program, ProgramAccount } from "@project-serum/anchor";
-import { setupMintCollection } from "@/utils/initMint";
-import Image from "next/image";
-import { Demo, IDL } from "@/utils/idl/demo";
-import {
-  JsonMetadata,
-  Metadata,
-  Nft,
-  NftWithToken,
-  Sft,
-  SftWithToken,
-} from "@metaplex-foundation/js";
+} from "@/utils/instructions"
+import { getNftStakingProgram, signAndSendTx } from "@/utils/anchor"
+import { IdlAccounts, Program, ProgramAccount } from "@project-serum/anchor"
+import Image from "next/image"
+import { NftStakingDemo, IDL } from "@/utils/idl/nft_staking_test"
+import { Nft, NftWithToken, Sft, SftWithToken } from "@metaplex-foundation/js"
 
-type UserStakeInfoStruct = IdlAccounts<Demo>["userStakeInfo"];
-type UserInfoStruct = IdlAccounts<Demo>["userInfo"];
+type UserStakeInfoStruct = IdlAccounts<NftStakingDemo>["userStakeInfo"]
+type UserInfoStruct = IdlAccounts<NftStakingDemo>["userInfo"]
 interface UserStakeInfoType {
-  pdaInfo: ProgramAccount<UserStakeInfoStruct>;
-  tokenInfo: Sft | SftWithToken | Nft | NftWithToken;
+  pdaInfo: ProgramAccount<UserStakeInfoStruct>
+  tokenInfo: Sft | SftWithToken | Nft | NftWithToken
 }
 
 export default function Home() {
-  const [mintInWallet, setMintInWallet] = useState<
-    (Sft | SftWithToken | Nft | NftWithToken)[] | []
-  >([]);
+  const [mintsInWallet, setMintsInWallet] = useState<
+    (Sft | SftWithToken | Nft | NftWithToken)[]
+  >([])
   const [nftStakingProgram, setNftStakingProgram] =
-    useState<Program<Demo> | null>(null);
-  const [userInfo, setUserInfo] = useState<UserInfoStruct | null>(null);
+    useState<Program<NftStakingDemo> | null>(null)
+  const [userInfo, setUserInfo] = useState<UserInfoStruct | null>(null)
   const [allUserStakeInfo, setAllUserStakeInfo] = useState<
     UserStakeInfoType[] | null
-  >(null);
-  const { connection } = useConnection();
-  const wallet = useAnchorWallet();
+  >(null)
+  const { connection } = useConnection()
+  const wallet = useAnchorWallet()
 
   useEffect(() => {
     if (wallet) {
-      (async () => {
+      ;(async () => {
         const program = getNftStakingProgram(
           connection,
           wallet,
           IDL,
-          new PublicKey("81MRLWNW25VrFiUw7usFDwB2cR87kMqzVLXS1xE4YtU6")
-        );
+          new PublicKey(process.env.NEXT_PUBLIC_NFT_STAKING_PROGRAM_ID ?? "")
+        )
         const allUserStakeInfo = await getAllUserStakeInfo(
           program,
           wallet.publicKey
-        );
-        setNftStakingProgram(program);
-        const userInfo = await getUserInfo(program, wallet.publicKey);
-        setUserInfo(userInfo);
-        setAllUserStakeInfo(allUserStakeInfo);
-        const eligibleMint = await getAllMintOwnedByUser(
+        )
+        setNftStakingProgram(program)
+        const userInfo = await getUserInfo(program, wallet.publicKey)
+        setUserInfo(userInfo)
+
+        setAllUserStakeInfo(allUserStakeInfo)
+        const eligibleMints = await getAllNftsOwnedByUser(
           program.provider.connection,
           wallet.publicKey
-        );
-        setMintInWallet(eligibleMint);
-      })();
+        )
+        setMintsInWallet(eligibleMints)
+      })()
     }
-  }, [wallet]);
+  }, [wallet])
 
   // Allow user to select a mint and stake
 
@@ -93,66 +85,63 @@ export default function Home() {
         nftStakingProgram,
         wallet.publicKey,
         mint // Selected Mint
-      );
+      )
 
-      const tx = new Transaction();
-      tx.add(stakeIx);
-      const txSig = await signAndSendTx(connection, tx, wallet);
-      console.log(`https://solscan.io/tx/${txSig}?cluster=devnet`);
+      const tx = new Transaction()
+      tx.add(stakeIx)
+      const txSig = await signAndSendTx(connection, tx, wallet)
+      console.log(`https://solscan.io/tx/${txSig}?cluster=devnet`)
       const allUserStakeInfo = await getAllUserStakeInfo(
         nftStakingProgram,
         wallet.publicKey
-      );
-      setAllUserStakeInfo(allUserStakeInfo);
-      const eligibleMint = await getAllMintOwnedByUser(
+      )
+
+      setAllUserStakeInfo(allUserStakeInfo)
+      const eligibleMint = await getAllNftsOwnedByUser(
         nftStakingProgram.provider.connection,
         wallet.publicKey
-      );
-      setMintInWallet(eligibleMint);
+      )
+      setMintsInWallet(eligibleMint)
     }
-  };
+  }
   const handleRedeem = async (mint: PublicKey) => {
     if (wallet && nftStakingProgram && mint) {
-      const stakeIx = await createRedeemIx(
-        nftStakingProgram,
-        wallet.publicKey,
-        mint
-      );
+      const stakeIx = await createRedeemIx(nftStakingProgram, mint)
 
-      const tx = new Transaction();
-      tx.add(stakeIx);
-      const txSig = await signAndSendTx(connection, tx, wallet);
-      console.log(`https://solscan.io/tx/${txSig}?cluster=devnet`);
-      const userInfo = await getUserInfo(nftStakingProgram, wallet.publicKey);
-      setUserInfo(userInfo);
+      const tx = new Transaction()
+      tx.add(stakeIx)
+      const txSig = await signAndSendTx(connection, tx, wallet)
+      console.log(`https://solscan.io/tx/${txSig}?cluster=devnet`)
+      const userInfo = await getUserInfo(nftStakingProgram, wallet.publicKey)
+      setUserInfo(userInfo)
     }
-  };
+  }
   const handleUnstake = async (mint: PublicKey) => {
     if (wallet && nftStakingProgram && mint) {
       const stakeIx = await createUnstakeIx(
         nftStakingProgram,
         wallet.publicKey,
         mint
-      );
+      )
 
-      const tx = new Transaction();
-      tx.add(stakeIx);
-      const txSig = await signAndSendTx(connection, tx, wallet);
-      console.log(`https://solscan.io/tx/${txSig}?cluster=devnet`);
+      const tx = new Transaction()
+      tx.add(stakeIx)
+      const txSig = await signAndSendTx(connection, tx, wallet)
+      console.log(`https://solscan.io/tx/${txSig}?cluster=devnet`)
       const allUserStakeInfo = await getAllUserStakeInfo(
         nftStakingProgram,
         wallet.publicKey
-      );
-      setAllUserStakeInfo(allUserStakeInfo);
-      const eligibleMint = await getAllMintOwnedByUser(
+      )
+      setAllUserStakeInfo(allUserStakeInfo)
+      const eligibleMint = await getAllNftsOwnedByUser(
         nftStakingProgram.provider.connection,
         wallet.publicKey
-      );
-      setMintInWallet(eligibleMint);
-      const userInfo = await getUserInfo(nftStakingProgram, wallet.publicKey);
-      setUserInfo(userInfo);
+      )
+      setMintsInWallet(eligibleMint)
+      const userInfo = await getUserInfo(nftStakingProgram, wallet.publicKey)
+      setUserInfo(userInfo)
     }
-  };
+  }
 
   return (
     <HomeContainer>
@@ -168,8 +157,8 @@ export default function Home() {
         <Vault>
           <VaultTitle>Wallet</VaultTitle>
           <VaultItems>
-            {mintInWallet &&
-              mintInWallet.map((mintInfo, key) => (
+            {mintsInWallet &&
+              mintsInWallet.map((mintInfo, key) => (
                 <ImageCard key={key}>
                   <Image
                     src={mintInfo.json?.image || ""}
@@ -194,7 +183,7 @@ export default function Home() {
                 (userStakeInfo, key) =>
                   Object.keys(
                     userStakeInfo.pdaInfo.account.stakeState
-                  ).includes("stake") && (
+                  ).includes("staked") && (
                     <ImageCard key={key}>
                       <Image
                         src={userStakeInfo.tokenInfo.json?.image || ""}
@@ -223,5 +212,5 @@ export default function Home() {
         </Vault>
       </VaultContainer>
     </HomeContainer>
-  );
+  )
 }

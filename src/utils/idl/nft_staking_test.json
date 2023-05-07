@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "name": "demo",
+  "name": "nft_staking_test",
   "instructions": [
     {
       "name": "stake",
@@ -8,12 +8,46 @@
         {
           "name": "userInfo",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "user"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "initializer"
+              }
+            ]
+          }
         },
         {
           "name": "stakingInfo",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "stake_info"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "initializer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Mint",
+                "path": "mint"
+              }
+            ]
+          }
         },
         {
           "name": "initializer",
@@ -28,11 +62,6 @@
         {
           "name": "pdaNftAccount",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "nftMetadata",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -69,22 +98,51 @@
         {
           "name": "userInfo",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "user"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "payer"
+              }
+            ]
+          }
         },
         {
           "name": "stakingInfo",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "stake_info"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "payer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Mint",
+                "path": "mint"
+              }
+            ]
+          }
         },
         {
           "name": "payer",
           "isMut": true,
           "isSigner": true
-        },
-        {
-          "name": "pdaNftAccount",
-          "isMut": false,
-          "isSigner": false
         },
         {
           "name": "mint",
@@ -105,12 +163,46 @@
         {
           "name": "userInfo",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "user"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "initializer"
+              }
+            ]
+          }
         },
         {
           "name": "stakingInfo",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "stake_info"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "initializer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Mint",
+                "path": "mint"
+              }
+            ]
+          }
         },
         {
           "name": "initializer",
@@ -205,23 +297,16 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "Stake"
+            "name": "Staked"
           },
           {
-            "name": "Unstake"
+            "name": "Unstaked"
           }
         ]
       }
     }
   ],
-  "errors": [
-    {
-      "code": 6000,
-      "name": "InvalidNftCollection",
-      "msg": "NFT isn't part of collection"
-    }
-  ],
   "metadata": {
-    "address": "81MRLWNW25VrFiUw7usFDwB2cR87kMqzVLXS1xE4YtU6"
+    "address": "3pvNETr3Kqf4zTuUmfZUj3QzAHxAXk4icc7F5YsztLar"
   }
 }

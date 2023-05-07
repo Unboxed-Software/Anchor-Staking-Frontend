@@ -6,8 +6,14 @@ const nextConfig = {
     styledComponents: true,
   },
   images: {
-    domains: ["arweave.net"],
+    // domains: ["arweave.net", "nftstorage.link"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "nftstorage.link",
+      },
+    ],
   },
-};
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig
